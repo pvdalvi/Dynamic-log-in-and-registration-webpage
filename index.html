@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Login & Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border-radius: 15px;
+        }
+        h2 {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body class="container my-5">
+    <h2 class="text-center mb-4">Welcome to Dynamic Login & Registration</h2>
+    <div class="card p-4 mb-4 shadow">
+        <h4 class="mb-3">Register</h4>
+        <form id="registerForm">
+            <input type="text" class="form-control mb-2" id="regId" placeholder="User ID" required>
+            <input type="text" class="form-control mb-2" id="regUsername" placeholder="Username" required>
+            <input type="email" class="form-control mb-2" id="regEmail" placeholder="Email" required>
+            <input type="password" class="form-control mb-2" id="regPassword" placeholder="Password (min 6 chars)" minlength="6" required>
+            <input type="text" class="form-control mb-2" id="regName" placeholder="Full Name" required>
+            <button type="submit" class="btn btn-primary w-100">Register</button>
+        </form>
+    </div>
+    <div class="card p-4 shadow">
+        <h4 class="mb-3">Login</h4>
+        <form id="loginForm">
+            <input type="text" class="form-control mb-2" id="loginUsername" placeholder="Username" required>
+            <input type="password" class="form-control mb-2" id="loginPassword" placeholder="Password" required>
+            <button type="submit" class="btn btn-success w-100">Login</button>
+        </form>
+    </div>
+    <script>
+        function getUsers() {
+            return JSON.parse(localStorage.getItem("users")) || [];
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem("users", JSON.stringify(users));
+        }
+
+        function registerUser(userData) {
+            let users = getUsers();
+            if (users.some(u => u.username === userData.username || u.email === userData.email)) {
+                alert("Username or Email already exists!");
+                return;
+            }
+            users.push(userData);
+            saveUsers(users);
+            alert("Registration successful!");
+        }
+
+        function loginUser(username, password) {
+            let users = getUsers();
+            const foundUser = users.find(u => u.username === username && u.password === password);
+            if (foundUser) {
+                localStorage.setItem("loggedInUser", JSON.stringify(foundUser));
+                alert(`Welcome ${foundUser.name}!`);
+                window.location.href = "profile.html";
+            } else {
+                alert("Invalid username or password!");
+            }
+        }
+
+        document.getElementById("registerForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const userData = {
+                id: document.getElementById("regId").value.trim(),
+                username: document.getElementById("regUsername").value.trim(),
+                email: document.getElementById("regEmail").value.trim(),
+                password: document.getElementById("regPassword").value.trim(),
+                name: document.getElementById("regName").value.trim()
+            };
+            if (!userData.id || !userData.username || !userData.email || !userData.password || !userData.name) {
+                alert("All fields are required!");
+                return;
+            }
+            if (userData.password.length < 6) {
+                alert("Password must be at least 6 characters long!");
+                return;
+            }
+            registerUser(userData);
+            this.reset();
+        });
+
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const username = document.getElementById("loginUsername").value.trim();
+            const password = document.getElementById("loginPassword").value.trim();
+            if (!username || !password) {
+                alert("Please fill in all fields!");
+                return;
+            }
+            loginUser(username, password);
+            this.reset();
+        });
+    </script>
+</body>
+</html>
