@@ -1,0 +1,56 @@
+// Run on page load
+window.onload = function () {
+  // Update navbar based on login state
+  if (typeof updateNavbar === "function") updateNavbar();
+
+  const user = getLoggedInUser();
+
+  // If no user is logged in, redirect to login page
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Safely populate profile information
+  const nameEl = document.getElementById("userName");
+  const emailEl = document.getElementById("userEmail");
+  const usernameEl = document.getElementById("userUsername");
+  const aboutEl = document.getElementById("userAbout");
+
+  if (nameEl) nameEl.textContent = user.name;
+  if (emailEl) emailEl.textContent = user.email;
+  if (usernameEl) usernameEl.textContent = user.username;
+  if (aboutEl) aboutEl.textContent = user.about || "No info provided";
+};
+
+// Logout function
+function logout() {
+  if (typeof logoutUser === "function") logoutUser();
+}
+
+// Delete account function
+function deleteAccount() {
+  if (!confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
+
+  const loggedInUser = getLoggedInUser();
+  if (!loggedInUser) return;
+
+  // Get users from localStorage (newly registered users)
+  let localUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+  // Remove current user from localStorage users
+  localUsers = localUsers.filter(u => u.username !== loggedInUser.username);
+
+  // Save updated users back to localStorage
+  localStorage.setItem("users", JSON.stringify(localUsers));
+
+  // Remove logged-in user
+  localStorage.removeItem("loggedInUser");
+
+  // Update navbar
+  if (typeof updateNavbar === "function") updateNavbar();
+
+  // Alert and redirect
+  alert("Your account has been deleted successfully!");
+  window.location.href = "index.html";
+}
