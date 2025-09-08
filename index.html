@@ -20,6 +20,8 @@
 </head>
 <body class="container my-5">
     <h2 class="text-center mb-4">Welcome to Dynamic Login & Registration</h2>
+
+    <!-- Registration Form -->
     <div class="card p-4 mb-4 shadow">
         <h4 class="mb-3">Register</h4>
         <form id="registerForm">
@@ -31,6 +33,8 @@
             <button type="submit" class="btn btn-primary w-100">Register</button>
         </form>
     </div>
+
+    <!-- Login Form -->
     <div class="card p-4 shadow">
         <h4 class="mb-3">Login</h4>
         <form id="loginForm">
@@ -39,42 +43,48 @@
             <button type="submit" class="btn btn-success w-100">Login</button>
         </form>
     </div>
+
     <script>
+        // Get stored users or return empty array
+        function getUsers() {
+            return JSON.parse(localStorage.getItem("users")) || [];
+        }
+
+        // Save users array to localStorage
+        function saveUsers(users) {
+            localStorage.setItem("users", JSON.stringify(users));
+        }
+
+        // Register user locally
         function registerUser(userData) {
-            fetch('users.json')
-                .then(response => response.json())
-                .then(users => {
-                    if (users.some(u => u.username === userData.username || u.email === userData.email)) {
-                        alert("Username or Email already exists!");
-                        return;
-                    }
-                    users.push(userData);
-                    return fetch('users.json', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(users)
-                    });
-                })
-                .then(() => alert("Registration successful!"))
-                .catch(error => console.error("Error:", error));
+            let users = getUsers();
+
+            // Check for duplicate username or email
+            if (users.some(u => u.username === userData.username || u.email === userData.email)) {
+                alert("Username or Email already exists!");
+                return;
+            }
+
+            users.push(userData);
+            saveUsers(users);
+            alert("Registration successful!");
         }
 
+        // Login user locally
         function loginUser(username, password) {
-            fetch('users.json')
-                .then(response => response.json())
-                .then(users => {
-                    const foundUser = users.find(u => u.username === username && u.password === password);
-                    if (foundUser) {
-                        localStorage.setItem('loggedInUser', JSON.stringify(foundUser));
-                        alert("Login successful!");
-                        window.location.href = "profile.html";
-                    } else {
-                        alert("Invalid username or password!");
-                    }
-                })
-                .catch(error => console.error("Error:", error));
+            let users = getUsers();
+
+            const foundUser = users.find(u => u.username === username && u.password === password);
+            if (foundUser) {
+                localStorage.setItem("loggedInUser", JSON.stringify(foundUser));
+                alert(`Welcome ${foundUser.name}!`);
+                window.location.href = "profile.html"; // optional redirect
+            } else {
+                alert("Invalid username or password!");
+            }
         }
 
+        // Event Listeners
         document.getElementById("registerForm").addEventListener("submit", function(event) {
             event.preventDefault();
             const userData = {
@@ -84,14 +94,17 @@
                 password: document.getElementById("regPassword").value.trim(),
                 name: document.getElementById("regName").value.trim()
             };
+
             if (!userData.id || !userData.username || !userData.email || !userData.password || !userData.name) {
                 alert("All fields are required!");
                 return;
             }
+
             if (userData.password.length < 6) {
                 alert("Password must be at least 6 characters long!");
                 return;
             }
+
             registerUser(userData);
             this.reset();
         });
@@ -100,10 +113,12 @@
             event.preventDefault();
             const username = document.getElementById("loginUsername").value.trim();
             const password = document.getElementById("loginPassword").value.trim();
+
             if (!username || !password) {
                 alert("Please fill in all fields!");
                 return;
             }
+
             loginUser(username, password);
             this.reset();
         });
